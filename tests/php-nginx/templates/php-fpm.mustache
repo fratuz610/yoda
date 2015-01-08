@@ -1,0 +1,20 @@
+[{{poolName}}]
+
+user = {{user}}
+group = {{group}}
+
+listen = 127.0.0.1:{{port}}
+listen.backlog = 128
+listen.allowed_clients = 127.0.0.1
+
+pm = dynamic
+pm.max_children = {{maxChildren}}
+pm.start_servers = 1
+pm.min_spare_servers = 1
+pm.max_spare_servers = 1
+pm.max_requests = 200
+
+php_admin_value[error_log] = {{{errorLog}}}
+{{#phpAdminValues}}
+php_admin_value[{{{key}}}] = {{{value}}}
+{{/phpAdminValues}}

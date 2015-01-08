@@ -1,0 +1,26 @@
+{
+  "name": "yoda",
+  "version": "0.0.1",
+  "description": "Yoda setup automation tool",
+  "dependencies": {
+    "moment": "*",
+    "moment-timezone": "*",
+    "response-time": "*",
+    "request": "*",
+    "gaikan" : "*",
+    "async": "*",
+    "mustache": "*",
+    "etc-passwd": "*",
+    "js-yaml": "*"
+  },
+  "devDependencies": {
+    "express": "*",
+    "mocha": "*",
+    "supertest": "*"
+  },
+  "scripts": {
+    "test": "npm run test-db",
+    "test-queue": "mocha test/queueTest.js",
+    "test-db": "mocha test/dbTest.js"
+  }
+}

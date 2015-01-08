@@ -1,0 +1,84 @@
+
+# php nginx test configuration
+
+- apt_package:
+    packageList: [php5-cli, php5-json, php5-mysqlnd, php5-fpm, php5-cgi, php5-gd, php5-curl, php5-mcrypt, php5, unzip, p7zip-full, nginx, git]
+
+- file:
+    path: /etc/nginx/conf.d/default.conf
+    content: client_max_body_size 128m;
+
+- directory:
+    path: /var/www
+
+- user:
+    username: test.example.com
+    group: test.example.com
+    home: /var/www/test.example.com
+    shell: /bin/bash
+
+- directory:
+    path: /var/www/test.example.com/web
+    user: test.example.com
+    group: test.example.com
+
+- directory:
+    path: /var/www/test.example.com/log
+    user: test.example.com
+    group: test.example.com
+
+# PhpFpm Config
+- file:
+    action: remove
+    path: /etc/php5/fpm/pool.d/www.conf
+
+- template:
+    path: /etc/php5/fpm/pool.d/test.example.com.conf
+    source: templates/php-fpm.mustache
+    variables: 
+      poolName: test.example.com
+      maxChildren: 5
+      port: 9000
+      user: test.example.com
+      group: test.example.com
+      errorLog: /var/www/test.example.com/log/php_error.log
+      phpAdminValues: 
+        - key: post_max_size
+          value: 128M
+        - key: upload_max_filesize
+          value: 128M
+        - key: expose_php
+          value: 0
+
+# Nginx Config
+- file:
+    action: remove
+    path: /etc/nginx/sites-available/default
+
+- file:
+    action: remove
+    path: /etc/nginx/sites-enabled/default
+
+- template:
+    path: /etc/nginx/nginx.conf
+    source: templates/nginx.conf.mustache
+
+- template:
+    path: /etc/nginx/sites-available/test.example.com
+    source: templates/simple-php-site.mustache
+    variables:
+      siteName: test.example.com
+      serverNames:
+        - test.example.com
+        - test-m.example.com
+      port: 9000
+
+- symlink:
+    source: /etc/nginx/sites-available/test.example.com
+    dest: /etc/nginx/sites-enabled/test.example.com
+
+- script:
+    cmd: "service php5-fpm restart"
+
+- script:
+    cmd: "service nginx restart"
