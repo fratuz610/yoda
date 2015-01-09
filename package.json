@@ -1,17 +1,17 @@
 {
   "name": "yoda",
-  "version": "0.0.1",
-  "description": "Yoda setup automation tool",
+  "version": "0.1.0",
+  "description": "Yoda - the JS provisioning tool",
   "dependencies": {
-    "moment": "*",
-    "moment-timezone": "*",
-    "response-time": "*",
     "request": "*",
     "gaikan" : "*",
     "async": "*",
     "mustache": "*",
     "etc-passwd": "*",
-    "js-yaml": "*"
+    "js-yaml": "*",
+    "nodemailer": "*",
+    "validate.js": "*",
+    "unzip": "*"
   },
   "devDependencies": {
     "express": "*",

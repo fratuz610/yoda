@@ -8,100 +8,72 @@ var async = require('async');
 var Log = require('./log.js');
 var Task = require('./task.js');
 
-var AptPackage = require('./resources/apt-package.js');
-var Directory = require('./resources/directory.js');
-var File = require('./resources/file.js');
-var Git = require('./resources/git.js');
-var Script = require('./resources/script.js');
-var Symlink = require('./resources/symlink.js');
-var Template = require('./resources/template.js');
-var User = require('./resources/user.js');
+var Identify = require('./tasks/internal/identify.js');
+var DownloadFromGit = require('./tasks/internal/downloadFromGit.js');
+var DownloadFromZip = require('./tasks/internal/downloadFromZip.js');
 
-// usage yoda URL or yoda file
+var PhoneHome = require('./tasks/internal/phoneHome.js');
+var Provision = require('./tasks/internal/provision.js');
 
-var doc;
-// Get document, or throw exception on error
-try {
-  doc = yaml.safeLoad(fs.readFileSync('tests/php-nginx/php-nginx.yaml', 'utf8'));
-} catch (e) {
-  return console.log(e);
-}
+// usage node yoda git URL or node yoda zip URL
 
-// we change the cwd to where the yaml file is
-process.chdir('tests/php-nginx/');
+if(process.argv.length != 4)
+	return console.log("Usage:\n\n\tyoda git <URL>\nOR\n\tyoda zip <URL>");
 
-var taskList = [];
-doc.forEach(function(item) {
-
-	// this is one object with 1 key only
-	for(var name in item) {
-
-		// we add back a reference to the name
-		item[name].name = name;
-
-		var task = new Task(item[name]);
-
-		
-		switch(name.toLowerCase()) {
-			case 'apt_package': case 'apt-package': taskList.push(new AptPackage(task)); break;
-			case 'directory': taskList.push(new Directory(task)); break;
-			case 'file': taskList.push(new File(task)); break;
-			case 'git': taskList.push(new Git(task)); break;
-			case 'script': taskList.push(new Script(task)); break;
-			case 'symlink': taskList.push(new Symlink(task)); break;
-			case 'template': taskList.push(new Template(task)); break;
-			case 'user': taskList.push(new User(task)); break;
-			default: throw new Error("Unrecognized task: " + name);
-		}
-
-		break;
-	}
-
-});
-
-console.log("yoda: Starting up: " + taskList.length + " tasks to carry out");
+var taskList =[];
 
 // we create our instance of the log
 var log = new Log();
-
-// the shared data is empty for the time being
 var data = {};
 
-// the run list contains all callbacks
-var runList = [];
+// the identify task runs first
+taskList = taskList.concat(new Identify(log, data));
 
-// we validate each task + create the final run list
-taskList.forEach(function(item) {
-	var errorStr = item.validate();
+// the sourceURL is always the same argument
+data.sourceURL = process.argv[3];
 
-	if(item.validate())
-		throw new Error("ERROR: task can't run: " + item.validate().message);
-	
-	var localTaskList = item.getRunList(data, log);
+switch(process.argv[2].toLowerCase()) {
+	case 'git': 
+		
+		if(process.argv[4]) 
+			data.branch = process.argv[4];
 
-	// we set the log prefix before each execution
-	localTaskList.unshift(function(callback) {
-		log.setPrefix(item.getName() + ": ");
-		log.info("Action: " + item.getAction());
-		callback();
-	});
+		taskList = taskList.concat(new DownloadFromGit(log, data));
+		break;
 
-	runList = runList.concat(localTaskList);
+	case 'zip':
+		taskList = taskList.concat(new DownloadFromZip(log, data));
+		break;
 
-});
+	default:
+		return console.log("Usage:\n\n\tyoda git <URL>\nOR\n\tyoda zip <URL>");
 
-console.log("yoda: Run list has " + runList.length + " small tasks to run");
+}
+
+console.log("yoda: setup complete and jobs kicking off");
 
 async.series(
 
-	runList,
+	taskList,
 
 	function(err, results){
 
-    if(err)
-    	return console.log("ERROR: " + err.stack);
+    if(err) {
+    	// we add to the log
+    	log.error(err);
+    	return;
+    }
 
-    return console.log("ALL GOOD");
+    // we phone home (no matter what happened)
+    async.series(
+			new PhoneHome(log, data),
+			function(err, results) {
+				if(err)
+					return console.error("Error phoning home: " + err);
+			
+				return console.log('yoda: all done');
+			}
+		);
+
 });
 
-console.log("yoda: setup complete and jobs kicked off");

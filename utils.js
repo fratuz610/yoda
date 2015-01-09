@@ -48,6 +48,12 @@ module.exports.command = function(commandLine, log, commandEnv, cwd) {
 
 };
 
+module.exports.getSetLogPrefixTask = function(log, name) {
+	return function(callback) {
+		log.setPrefix(name + ": ");
+		callback();
+	};
+};
 
 module.exports.numberToPercent = function(number) { return parseInt(number * 100) + "%"; };
 
