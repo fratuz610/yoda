@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /*jslint node: true */
 "use strict";
 
@@ -17,7 +19,7 @@ var Provision = require('./tasks/internal/provision.js');
 
 // usage node yoda git URL or node yoda zip URL
 
-if(process.argv.length != 4)
+if(process.argv.length < 4)
 	return console.log("Usage:\n\n\tyoda git <URL>\nOR\n\tyoda zip <URL>");
 
 var taskList =[];
