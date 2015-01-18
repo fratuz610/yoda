@@ -9,11 +9,11 @@ module.exports = function(log, data) {
 	var _log = log;
 
 	this.getDeleteTempFolders = function() {
+
 		return function(callback) {
 
 			if(!_data.tempFolderList || _data.tempFolderList.length === 0)
 				return callback();
-
 
 			// we add to the temp folder list
 			_data.tempFolderList.forEach(function(tempFolder) {

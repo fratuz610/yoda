@@ -83,10 +83,15 @@ async.series(
     	return;
     }
 
+    var finalTaskList = [];
+    finalTaskList = finalTaskList.concat(new Cleanup(log, data));
+    finalTaskList = finalTaskList.concat(new PhoneHome(log, data));
+
     // we phone home (no matter what happened)
     async.series(
-    	new Cleanup(log, data),
-			new PhoneHome(log, data),
+    	
+    	finalTaskList,
+			
 			function(err, results) {
 
 				if(err)

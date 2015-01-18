@@ -6,7 +6,7 @@ rm -f /usr/bin/node
 rm -f /usr/bin/npm
 rm -fr /tmp/node*
 rm -fr /usr/local/yoda
-rm -ft /usr/bin/yoda
+rm -fr /usr/bin/yoda
 
 wget http://nodejs.org/dist/latest/node-v0.10.35-linux-x64.tar.gz -P /tmp
 tar -C /tmp -xf /tmp/node-v0.10.35-linux-x64.tar.gz
