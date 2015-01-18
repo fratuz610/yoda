@@ -3,6 +3,8 @@
 
 var request = require('request');
 var exec = require('child_process').exec;
+var fs = require('fs');
+var path = require('path');
 
 module.exports.command = function(commandLine, log, commandEnv, cwd) {
 
@@ -137,6 +139,29 @@ module.exports.uppercaseToCamelCase = function(str) {
     return (i>0?x[0].toUpperCase():x[0].toLowerCase()) + x.slice(1).toLowerCase();
 
 	}).join('');
+};
+
+
+module.exports.deleteFolder = function(startFolder) {
+
+	fs.readdirSync(startFolder).forEach(function(fileName) {
+      
+      var currentFile = startFolder + path.sep + fileName;
+
+      //console.log("Analyzying file/folder: " + currentFile);
+
+      // if this is a file let's delete it
+      var pathStat = fs.statSync(currentFile);
+
+      if(pathStat.isDirectory())
+      	return module.exports.deleteFolder(currentFile);
+
+      // if this is a file let's delete it
+      fs.unlinkSync(currentFile);
+  });
+
+	// we then delete the current folder
+	fs.rmdirSync(startFolder);
 };
 
 module.exports.httpError = function(httpCode, msg) {

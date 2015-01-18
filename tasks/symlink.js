@@ -10,6 +10,7 @@ module.exports = function(task) {
 	var _self = this;
 	var _task = task;
 	var _data;
+	var _log;
 
 	this.getName = function() { return "symlink"; };
 	this.getAction = function() { return _task.getAction(); };
@@ -20,6 +21,7 @@ module.exports = function(task) {
 	this.getRunList = function(data, log) {
 
 		_data = data;
+		_log = log;
 
 		var actionList = [];
 
@@ -71,6 +73,7 @@ module.exports = function(task) {
 
 		try {
 			fs.symlinkSync(_task.getParam('source'), _task.getParam('dest'));
+			_log.info("Created soft symlink from '" + _task.getParam('source') + "' to '" + _task.getParam('dest') + "'");
 		} catch(err) {
 			return callback(new Error("Unable to symlink " + _task.getParam('source') + " to " + _task.getParam('dest') + " : " + err));
 		}
@@ -83,6 +86,9 @@ module.exports = function(task) {
 		if(_task.getParam('mode')) {
 			try {
 				fs.chmodSync(_task.getParam('path'), _task.getParam('mode'));
+
+				_log.info("Chmod symlink '" + _task.getParam('path') + " to mode " + _task.getParam('mode') + ": done");
+
 			} catch(err) {
 				return callback(new Error("Unable to chmod file: " + _task.getParam('path') + " to mode: " + _task.getParam('mode') + ": " + err));
 			}
@@ -93,12 +99,14 @@ module.exports = function(task) {
 
 	this._chown = function(callback) {
 
-		var cmd;
+		var target;
 
 		if(_task.getParam('user') && !_task.getParam('group'))
-			cmd = "chown " + _task.getParam('user') + " " + _task.getParam('path');
+			target = _task.getParam('user');
 		else if(_task.getParam('user') && _task.getParam('group'))
-			cmd = "chown " + _task.getParam('user') + ":" + _task.getParam('group') +" " + _task.getParam('path');
+			target = _task.getParam('user') + ":" + _task.getParam('group');
+
+		var cmd = "chown " + target + " " + _task.getParam('path');
 
 		if(!cmd)
 			return callback();
@@ -107,6 +115,8 @@ module.exports = function(task) {
 
 			if(error)
 				callback(new Error("Unable to chown file: " + _task.getParam('path') + " :" + error));
+
+			_log.info("Chown symlink '" + _task.getParam('path') + " to " + target + ": done");
 
 			callback();
 		});

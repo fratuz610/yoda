@@ -17,22 +17,20 @@ module.exports = function(task) {
 
 	this.getRunList = function(data, log) {
 
-		var actionList = new Array(2);
+		var actionList = [];
 		
 		var env = { "DEBIAN_FRONTEND": "noninteractive" };
-
-		actionList[0] = utils.command("apt-get update", log, env);
 
 		switch(_task.getAction()) {
 
 			case 'default':	
-			case 'install': actionList[1]  =  utils.command("apt-get -q -y install " + _task.getParam("packageList").join(" "), log, env); break;
+			case 'install': actionList.push(utils.command("apt-get -q -y install " + _task.getParam("packageList").join(" "), log, env)); break;
 
-			case 'upgrade': actionList[1]  =  utils.command("apt-get -q -y upgrade " + _task.getParam("packageList").join(" "), log, env); break;
+			case 'upgrade': actionList.push(utils.command("apt-get -q -y upgrade " + _task.getParam("packageList").join(" "), log, env)); break;
 
-			case 'remove': actionList[1]  =  utils.command("apt-get -q -y remove " + _task.getParam("packageList").join(" "), log, env); break;
+			case 'remove': actionList.push(utils.command("apt-get -q -y remove " + _task.getParam("packageList").join(" "), log, env)); break;
 
-			case 'purge': actionList[1]  =  utils.command("apt-get -q -y --purge remove " + _task.getParam("packageList").join(" "), log, env); break;
+			case 'purge': actionList.push(utils.command("apt-get -q -y --purge remove " + _task.getParam("packageList").join(" "), log, env)); break;
 
 			default: 
 				throw new Error("Unrecognized action '" + _task.getAction() + "'");

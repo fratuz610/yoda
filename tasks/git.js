@@ -60,13 +60,16 @@ module.exports = function(task) {
 			try {
 		    stats = fs.lstatSync(_task.getParam('destination'));
 			} catch (e) {
-	      fs.mkdirSync(_task.getParam('destination'));
+				fs.mkdirSync(_task.getParam('destination'));
+				_log.info("Destination folder ("+_task.getParam('destination') +") didn't exist and has been created");
 	      return callback();
 			}
 
 			// the folder exists already and it's a directory
-			if(stats.isDirectory())
+			if(stats.isDirectory()) {
+				_log.info("Destination folder ("+_task.getParam('destination') +") already exists");
 				return callback();
+			}
 
 			// the folder exists but it's not a folder
 			try {
@@ -102,12 +105,14 @@ module.exports = function(task) {
 
 		return function(callback) {
 			
-			var cmd;
+			var target;
 
 			if(_task.getParam('user') && !_task.getParam('group'))
-				cmd = "chown " + _task.getParam('user') + " " + _task.getParam('destination');
+				target = _task.getParam('user');
 			else if(_task.getParam('user') && _task.getParam('group'))
-				cmd = "chown " + _task.getParam('user') + ":" + _task.getParam('group') +" " + _task.getParam('destination');
+				target = _task.getParam('user') + ":" + _task.getParam('group');
+
+			var cmd = "chown " + target + " " + _task.getParam('path');
 
 			if(!cmd)
 				return callback();
@@ -116,6 +121,8 @@ module.exports = function(task) {
 
 				if(error)
 					callback(new Error("Unable to chown folder: " + _task.getParam('destination') + " :" + error));
+
+				_log.info("Chown destination folder '" + _task.getParam('path') + " to " + target + ": done");
 
 				callback();
 

@@ -11,6 +11,7 @@ module.exports = function(task) {
 	var _self = this;
 	var _task = task;
 	var _data;
+	var _log;
 
 	this.getName = function() { return "template"; };
 	this.getAction = function() { return _task.getAction(); };
@@ -21,12 +22,13 @@ module.exports = function(task) {
 	this.getRunList = function(data, log) {
 
 		_data = data;
+		_log = log;
 
 		var actionList = [];
 
 		// only one default action here
 		actionList.push(_self._template);
-		
+
 		if(_task.getParam('user'))
 			actionList.push(_self._chown);
 	
@@ -72,6 +74,8 @@ module.exports = function(task) {
 		} catch(err) {
 			return callback(new Error("Error writing dest file: '" + _task.getParam('path') + "': " + err));
 		}
+
+		_log.info("File " + _task.getParam('path') + " created/updated from template " + _task.getParam('source') + ": " + output.length + " bytes");
 		
 		// all good
 		callback();
@@ -82,6 +86,9 @@ module.exports = function(task) {
 		if(_task.getParam('mode')) {
 			try {
 				fs.chmodSync(_task.getParam('path'), _task.getParam('mode'));
+
+				_log.info("Chmod file '" + _task.getParam('path') + " to mode " + _task.getParam('mode') + ": done");
+
 			} catch(err) {
 				return callback(new Error("Unable to chmod file: " + _task.getParam('path') + " to mode: " + _task.getParam('mode') + ": " + err));
 			}
@@ -92,12 +99,14 @@ module.exports = function(task) {
 
 	this._chown = function(callback) {
 
-		var cmd;
+		var target;
 
 		if(_task.getParam('user') && !_task.getParam('group'))
-			cmd = "chown " + _task.getParam('user') + " " + _task.getParam('path');
+			target = _task.getParam('user');
 		else if(_task.getParam('user') && _task.getParam('group'))
-			cmd = "chown " + _task.getParam('user') + ":" + _task.getParam('group') +" " + _task.getParam('path');
+			target = _task.getParam('user') + ":" + _task.getParam('group');
+
+		var cmd = "chown " + target + " " + _task.getParam('path');
 
 		if(!cmd)
 			return callback();
@@ -107,11 +116,12 @@ module.exports = function(task) {
 			if(error)
 				callback(new Error("Unable to chown file: " + _task.getParam('path') + " :" + error));
 
+			_log.info("Chown file '" + _task.getParam('path') + " to " + target + ": done");
+
 			callback();
 		});
 	
 	};
-
 
 
 };

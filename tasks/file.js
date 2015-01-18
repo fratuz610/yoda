@@ -9,6 +9,7 @@ module.exports = function(task) {
 
 	var _self = this;
 	var _task = task;
+	var _log;
 
 	this.getName = function() { return "file"; };
 	this.getAction = function() { return _task.getAction(); };
@@ -18,6 +19,8 @@ module.exports = function(task) {
 	this.optionalParams = function() { return ['content', 'group', 'mode', 'user']; };
 
 	this.getRunList = function(data, log) {
+
+		_log = log;
 
 		var actionList = [];
 
@@ -66,6 +69,7 @@ module.exports = function(task) {
 
 		try {
 			// we try and do a file put contents
+			_log.info("Creating updating content of file '" + _task.getParam('path') + "' : " + _task.getParam('content').length);
 			fs.writeFileSync(_task.getParam('path'), _task.getParam('content'));
 		} catch(err) {
 			return callback(new Error("Unable to create file " + _task.getParam('path') + " : " + err));
@@ -78,7 +82,9 @@ module.exports = function(task) {
 
 		try {
 			fs.unlinkSync(_task.getParam('path'));
+			_log.info("Deleting file '" + _task.getParam('path') + ": done");
 		} catch(err) {
+			_log.info("Deleting file '" + _task.getParam('path') + ": unable to delete file: " + err);
 			return callback();
 		}
 		
@@ -90,6 +96,7 @@ module.exports = function(task) {
 		var mode = 'w';
 
 		try {
+
 			// if the file doesn't exist let's create it
 			if(!fs.existsSync(_task.getParam('path')))
 				fs.closeSync(fs.openSync(_task.getParam('path'), 'w'));
@@ -98,6 +105,9 @@ module.exports = function(task) {
 				fs.futimesSync(fd, new Date(), new Date());
 				fs.closeSync(fd);
 			}
+
+			_log.info("Touching file '" + _task.getParam('path') + ": done");
+
 		} catch(err) {
 			return callback(new Error("Unable to touch file: " + _task.getParam('path') + " : " + err));
 		}
@@ -111,6 +121,9 @@ module.exports = function(task) {
 		if(_task.getParam('mode')) {
 			try {
 				fs.chmodSync(_task.getParam('path'), _task.getParam('mode'));
+
+				_log.info("Chmod file '" + _task.getParam('path') + " to mode " + _task.getParam('mode') + ": done");
+
 			} catch(err) {
 				return callback(new Error("Unable to chmod file: " + _task.getParam('path') + " to mode: " + _task.getParam('mode') + ": " + err));
 			}
@@ -121,12 +134,14 @@ module.exports = function(task) {
 
 	this._chown = function(callback) {
 
-		var cmd;
+		var target;
 
 		if(_task.getParam('user') && !_task.getParam('group'))
-			cmd = "chown " + _task.getParam('user') + " " + _task.getParam('path');
+			target = _task.getParam('user');
 		else if(_task.getParam('user') && _task.getParam('group'))
-			cmd = "chown " + _task.getParam('user') + ":" + _task.getParam('group') +" " + _task.getParam('path');
+			target = _task.getParam('user') + ":" + _task.getParam('group');
+
+		var cmd = "chown " + target + " " + _task.getParam('path');
 
 		if(!cmd)
 			return callback();
@@ -135,6 +150,8 @@ module.exports = function(task) {
 
 			if(error)
 				callback(new Error("Unable to chown file: " + _task.getParam('path') + " :" + error));
+
+			_log.info("Chown file '" + _task.getParam('path') + " to " + target + ": done");
 
 			callback();
 		});

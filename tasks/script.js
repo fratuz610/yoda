@@ -36,9 +36,6 @@ module.exports = function(task) {
 
 	this.validate = function() {
 
-		//if(!(_task.getParam("packageList") instanceof Array))
-			//return new Error("packageList is not an array");
-		
 		return null;
 	};
 

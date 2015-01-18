@@ -10,6 +10,7 @@ module.exports = function(task) {
 
 	var _self = this;
 	var _task = task;
+	var _log;
 
 	this.getName = function() { return "directory"; };
 	this.getAction = function() { return _task.getAction(); };
@@ -18,6 +19,8 @@ module.exports = function(task) {
 	this.optionalParams = function() { return ['group', 'mode', 'user', 'recursive']; };
 
 	this.getRunList = function(data, log) {
+
+		_log = log;
 
 		var actionList = [];
 
@@ -67,6 +70,7 @@ module.exports = function(task) {
 			if(!pathStat.isDirectory())
 				return callback(new Error("Path " + _task.getParam('path') + " already exists and is not a folder"));
 
+			_log.info("Folder " + _task.getParam('path') + " exists already");
 			// the folder exists already, all good
 			return callback();
 
@@ -76,6 +80,8 @@ module.exports = function(task) {
 
 		try {
 			fs.mkdirSync(_task.getParam('path'));
+
+			_log.info("Folder " + _task.getParam('path') + " created");
 		} catch(err) {
 			return callback(new Error("Unable to create directory: " + _task.getParam('path') + " : " + err));
 		}
@@ -86,7 +92,8 @@ module.exports = function(task) {
 	this._deleteFolder = function(callback) {
 
 		try {
-			_self._emptyFolder(_task.getParam('path'));
+			utils.deleteFolder(_task.getParam('path'));
+			_log.info("Folder " + _task.getParam('path') + " deleted");
 		} catch(err) {
 			return callback(new Error("Unable to delete directory: " + _task.getParam('path') + ": " + err));
 		}
@@ -94,33 +101,14 @@ module.exports = function(task) {
 		callback();
 	};
 
-	this._emptyFolder = function(startFolder) {
-
-		fs.readdirSync(startFolder).forEach(function(fileName) {
-        
-        var currentFile = startFolder + path.sep + fileName;
-
-        //console.log("Analyzying file/folder: " + currentFile);
-
-        // if this is a file let's delete it
-        var pathStat = fs.statSync(currentFile);
-
-        if(pathStat.isDirectory())
-        	return _self._emptyFolder(currentFile);
-
-        // if this is a file let's delete it
-        fs.unlinkSync(currentFile);
-    });
-
-		// we then delete the current folder
-		fs.rmdirSync(startFolder);
-	};
-
 	this._chmod = function(callback) {
 		
 		if(_task.getParam('mode')) {
 			try {
 				fs.chmodSync(_task.getParam('path'), _task.getParam('mode'));
+
+				_log.info("Chmod folder '" + _task.getParam('path') + " to mode " + _task.getParam('mode') + ": done");
+
 			} catch(err) {
 				return callback(new Error("Unable to chmod folder: " + _task.getParam('path') + " to mode: " + _task.getParam('mode') + ": " + err));
 			}
@@ -131,12 +119,14 @@ module.exports = function(task) {
 
 	this._chown = function(callback) {
 
-		var cmd;
+		var target;
 
 		if(_task.getParam('user') && !_task.getParam('group'))
-			cmd = "chown " + _task.getParam('user') + " " + _task.getParam('path');
+			target = _task.getParam('user');
 		else if(_task.getParam('user') && _task.getParam('group'))
-			cmd = "chown " + _task.getParam('user') + ":" + _task.getParam('group') +" " + _task.getParam('path');
+			target = _task.getParam('user') + ":" + _task.getParam('group');
+
+		var cmd = "chown " + target + " " + _task.getParam('path');
 
 		if(!cmd)
 			return callback();
@@ -145,6 +135,8 @@ module.exports = function(task) {
 
 			if(error)
 				callback(new Error("Unable to chown folder: " + _task.getParam('path') + " :" + error));
+
+			_log.info("Chown folder '" + _task.getParam('path') + " to " + target + ": done");
 
 			callback();
 		});

@@ -18,6 +18,7 @@ var DownloadFromGit = require('./tasks/internal/downloadFromGit.js');
 var DownloadFromZip = require('./tasks/internal/downloadFromZip.js');
 
 var PhoneHome = require('./tasks/internal/phoneHome.js');
+var Cleanup = require('./tasks/internal/cleanup.js');
 var Provision = require('./tasks/internal/provision.js');
 
 var argv = require('yargs')
@@ -41,6 +42,9 @@ taskList = taskList.concat(new Identify(log, data));
 
 // the sourceURL is always the same argument
 data.sourceURL = argv._[1];
+
+// we initialize the temp folder list
+data.tempFolderList = [];
 
 // if we have additional parameters, let's store them
 if(argv.yoda)
@@ -81,6 +85,7 @@ async.series(
 
     // we phone home (no matter what happened)
     async.series(
+    	new Cleanup(log, data),
 			new PhoneHome(log, data),
 			function(err, results) {
 

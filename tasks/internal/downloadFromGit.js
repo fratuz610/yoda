@@ -30,6 +30,9 @@ module.exports = function(log, data) {
 			// we set the task list folder to the folder we just created
 			_data.taskListFolder = _tempFolder;
 
+			// we add to the temp folder list
+			_data.tempFolderList.push(_tempFolder);
+
 			return callback();
 		};
 

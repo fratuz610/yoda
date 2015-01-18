@@ -154,6 +154,8 @@ module.exports = function(task) {
 				if(err)
 					return callback(err);
 
+				_log.info("User " + _task.getParam('username') + " created/modified");
+
 				callback();
 			});
 		};
@@ -174,6 +176,8 @@ module.exports = function(task) {
 				if(err)
 					return callback(err);
 
+				_log.info("Group " + _task.getParam('group') + " added");
+
 				return callback();
 			});
 			
@@ -192,6 +196,8 @@ module.exports = function(task) {
 
 				if(err)
 					return callback(err);
+
+				_log.info("User " + _task.getParam('username') + " deleted");
 
 				callback();
 			});
