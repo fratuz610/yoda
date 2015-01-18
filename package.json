@@ -11,7 +11,8 @@
     "js-yaml": "*",
     "nodemailer": "*",
     "validate.js": "*",
-    "unzip": "*"
+    "unzip": "*",
+    "yargs": "*"
   },
   "devDependencies": {
     "express": "*",

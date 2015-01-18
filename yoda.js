@@ -3,6 +3,9 @@
 /*jslint node: true */
 "use strict";
 
+// make sure we are running from the local folder
+process.chdir(__dirname);
+
 var yaml = require('js-yaml');
 var fs   = require('fs');
 var async = require('async');
@@ -17,10 +20,15 @@ var DownloadFromZip = require('./tasks/internal/downloadFromZip.js');
 var PhoneHome = require('./tasks/internal/phoneHome.js');
 var Provision = require('./tasks/internal/provision.js');
 
-// usage node yoda git URL or node yoda zip URL
-
-if(process.argv.length < 4)
-	return console.log("Usage:\n\n\tyoda git <URL>\nOR\n\tyoda zip <URL>");
+var argv = require('yargs')
+    .demand(2)
+    .usage('Usage: yoda git <gitURL> or yoda zip <zipURL>')
+    .alias('b', 'branch')
+    .describe('b', 'GIT branch or commit hash')
+    .alias('f', 'folder')
+    .describe('f', 'The folder containing the selected taskList in the repo')
+    .describe('yoda', 'Additional command line parameters (take precedence over file based data)')
+    .argv;
 
 var taskList =[];
 
@@ -32,25 +40,30 @@ var data = {};
 taskList = taskList.concat(new Identify(log, data));
 
 // the sourceURL is always the same argument
-data.sourceURL = process.argv[3];
+data.sourceURL = argv._[1];
 
-switch(process.argv[2].toLowerCase()) {
+// if we have additional parameters, let's store them
+if(argv.yoda)
+	data.cmdlineData = argv.yoda;
+
+// the optional params 
+if(argv.b) data.sourceBranch = argv.b;
+if(argv.f) data.sourceFolder = argv.f;
+
+switch(argv._[0].toLowerCase()) {
 	case 'git': 
-		
-		if(process.argv[4]) 
-			data.branch = process.argv[4];
-
 		taskList = taskList.concat(new DownloadFromGit(log, data));
 		break;
-
 	case 'zip':
 		taskList = taskList.concat(new DownloadFromZip(log, data));
 		break;
 
-	default:
-		return console.log("Usage:\n\n\tyoda git <URL>\nOR\n\tyoda zip <URL>");
-
+	default: 
+		console.log(argv.help());
+		process.exit(1);
 }
+
+taskList = taskList.concat(new Provision(log, data));
 
 console.log("yoda: setup complete and jobs kicking off");
 
@@ -62,7 +75,7 @@ async.series(
 
     if(err) {
     	// we add to the log
-    	log.error(err);
+    	log.error("yoda: Fatal ERROR: " + err);
     	return;
     }
 
@@ -70,6 +83,7 @@ async.series(
     async.series(
 			new PhoneHome(log, data),
 			function(err, results) {
+
 				if(err)
 					return console.error("Error phoning home: " + err);
 			

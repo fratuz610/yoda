@@ -1,6 +1,7 @@
 /*jslint node: true */
 "use strict";
 
+var utils = require('../../utils.js');
 var nodemailer = require('nodemailer');
 var validate = require("validate.js");
 
@@ -9,6 +10,15 @@ module.exports = function(log, data) {
 	var _data = data;
 	var _log = log;
 	var _self = this;
+
+
+	this.getRecordEndTimeTask = function() {
+
+		return function(callback) {
+			_log.info("Ending at " + new Date());
+			return callback();
+		};
+	};
 
 	// valid submission constraint
 	var phoneHomeConstraints = {
@@ -52,13 +62,14 @@ module.exports = function(log, data) {
 			// setup e-mail data with unicode symbols
 			var mailOptions = {
 			    from: 'Yoda Provisioning Tool <'+_data.phoneHome.from+'>', // sender address
-			    to: _data.phoneHome.toList.join(','), // list of receivers
+			    to: toList.join(','), // list of receivers
 			    subject: 'Yoda run results for ' + _data.instanceId, // Subject line
 			    text: _log.getLog() // plaintext body
 			};
 
 			// send mail with defined transport object
 			transporter.sendMail(mailOptions, function(error, info){
+				
 			    if(error)
 			        return callback(new Error("Unable to send phoneHome email because: " + error));
 
@@ -73,5 +84,9 @@ module.exports = function(log, data) {
     return re.test(email);
 	};
 
-	return [this.getPhoneHomeTask()];
+	return [
+		utils.getSetLogPrefixTask(_log, 'phoneHome'),
+		this.getRecordEndTimeTask(),
+		this.getPhoneHomeTask()
+		];
 };

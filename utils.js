@@ -25,9 +25,11 @@ module.exports.command = function(commandLine, log, commandEnv, cwd) {
 
 		//we run the command
 		exec(commandLine + " 2>&1", options, function(error, stdout, stderr) {
+				
+			console.log("Command complated " +error + " / " + stdout.toString().trim());
 			
 			if(error)
-				return callback(error);
+				return callback(new Error("Command failed with error: " + error + " output: " + stdout.toString().trim()));
 
 			if(stdout.toString().trim().length > 0) {
 
@@ -124,6 +126,17 @@ module.exports.mergeRecursive = function(obj1, obj2) {
   }
 
   return obj1;
+};
+
+module.exports.uppercaseToCamelCase = function(str) {
+	
+	str = str.replace("-", "_");
+
+	return str.split('_').map(function(x,i){
+
+    return (i>0?x[0].toUpperCase():x[0].toLowerCase()) + x.slice(1).toLowerCase();
+
+	}).join('');
 };
 
 module.exports.httpError = function(httpCode, msg) {

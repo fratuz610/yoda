@@ -1,7 +1,7 @@
 /*jslint node: true */
 "use strict";
 
-var utils = require('../utils.js');
+var utils = require('../../utils.js');
 var yaml = require('js-yaml');
 
 var fs = require('fs');
@@ -27,8 +27,81 @@ module.exports = function(log, data) {
 	// uses _data.taskListFolder
 	var _data = data;
 	var _log = log;
-	var _doc;
+	var _yodaDoc;
 	var _runList;
+
+	this.getLoadGlobalDataTask = function() {
+
+		return function(callback) {
+
+			var globalDoc;
+			var globalBytes;
+
+			// we try and load global.yaml
+			try {
+			  globalBytes = fs.readFileSync(path.join(_data.taskListFolder, 'global.yaml'), 'utf8');
+			} catch (e) {
+				_log.info("No global.yaml found, skipping");
+			  return callback();
+			}
+
+			// we try and parse global.yaml
+			try {
+			  globalDoc = yaml.safeLoad(globalBytes);
+			} catch (e) {
+			  return callback(new Error("Unable to parse yaml file " + path.join(_data.taskListFolder, 'global.yaml') + " because: " + e));
+			}
+
+			_data = utils.mergeRecursive(_data, globalDoc);
+
+			callback();
+		};
+	};
+
+	this.getUpdateTaskFolderTask = function() {
+
+		return function(callback) {
+			if(_data.sourceFolder) {
+				_data.taskListFolder = path.join(_data.taskListFolder, _data.sourceFolder);
+				_log.info("Updating taskListFolder to '" + _data.taskListFolder + "'");
+			}
+			
+			callback();
+		};
+	};
+
+	this.getLoadLocalDataTask = function() {
+
+		return function(callback) {
+
+			var localDoc;
+			var localBytes;
+
+			// we try and load data.yaml
+			try {
+			  localBytes = fs.readFileSync(path.join(_data.taskListFolder, 'data.yaml'), 'utf8');
+			} catch (e) {
+				_log.info("No data.yaml found, skipping");
+			  return callback();
+			}
+
+			// we try and parse data.yaml
+			try {
+			  localDoc = yaml.safeLoad(localBytes);
+			} catch (e) {
+			  return callback(new Error("Unable to parse yaml file " + path.join(_data.taskListFolder, 'data.yaml') + " because: " + e));
+			}
+
+			_data = utils.mergeRecursive(_data, localDoc);
+
+			if(!_data.phoneHome)
+				_log.warning("No phoneHome information supplied, logging information will be discarded");
+			else
+				_log.info("PhoneHome data supplied, all logging information will be sent to " + _data.phoneHome.to);
+
+			return callback();
+		};
+	};
 
 	this.getLoadYamlTask = function() {
 
@@ -36,22 +109,30 @@ module.exports = function(log, data) {
 
 			// Get document, or throw exception on error
 			try {
-			  _doc = yaml.safeLoad(fs.readFileSync(path.join(_data.taskListFolder, 'yoda.yaml'), 'utf8'));
+			  _yodaDoc = yaml.safeLoad(fs.readFileSync(path.join(_data.taskListFolder, 'yoda.yaml'), 'utf8'));
 			} catch (e) {
 			  return callback(new Error("Unable to read yaml file " + path.join(_data.taskListFolder, 'yoda.yaml') + " because: " + e));
 			}
 
-			if(!_doc.taskList || !(_doc.taskList instanceof Array))
-				return callback(new Error("No taskList in the yaml file:" + JSON.stringify(_doc.taskList)));
+			if(!_yodaDoc.taskList || !(_yodaDoc.taskList instanceof Array))
+				return callback(new Error("No taskList in the yaml file:" + JSON.stringify(_yodaDoc.taskList)));
 
-			if(!_doc.phoneHome)
-				_log.warning("No phoneHome information supplied, logging information will be discarded");
-			else {
-				_log.warning("PhoneHome data supplied, all logging information will be sent to " + _doc.phoneHome.to);
-				_data.phoneHome = _doc.phoneHome;
+			_log.info("Tasklist loaded: " + _yodaDoc.taskList.length + " items");
+
+			return callback();
+		};
+
+	};
+
+	this.getReadCmdParamsTask = function() {
+
+		return function(callback) {
+
+			if(_data.cmdlineData) {
+				_log.info("Injecting command line additional parameters");
+				_data = utils.mergeRecursive(_data, _data.cmdlineData);
 			}
 
-			_log.info("Tasklist loaded");
 			return callback();
 		};
 
@@ -65,7 +146,7 @@ module.exports = function(log, data) {
 
 			var lastError;
 
-			_doc.taskList.forEach(function(item) {
+			_yodaDoc.taskList.forEach(function(item) {
 
 				// this is one object with 1 key only
 				for(var name in item) {
@@ -103,7 +184,7 @@ module.exports = function(log, data) {
 				var errorStr = item.validate();
 
 				if(item.validate()) {
-					lastError = new Error("ERROR: task can't run: " + item.validate().message));
+					lastError = new Error("ERROR: task can't run: " + item.validate().message);
 					return;
 				}
 				
@@ -125,6 +206,7 @@ module.exports = function(log, data) {
 
 			_log.info("provision: Run list has " + _runList.length + " small tasks to run");
 
+			return callback();
 		};
 
 	};
@@ -158,7 +240,11 @@ module.exports = function(log, data) {
 
 	return [
 		utils.getSetLogPrefixTask(_log, 'provision'),
-		this.getLoadYamlTask(), 
+		this.getLoadGlobalDataTask(),
+		this.getUpdateTaskFolderTask(),
+		this.getLoadLocalDataTask(),
+		this.getLoadYamlTask(),
+		this.getReadCmdParamsTask(),
 		this.getCreateTaskListTask(), 
 		this.getRunTaskListTask()
 	];

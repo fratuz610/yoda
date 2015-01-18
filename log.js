@@ -37,7 +37,7 @@ module.exports = function(size) {
 	};
 
 	this.error = function(error) {
-		_self.info("ERROR: " + error.getMessage());
+		_self.info("ERROR: " + error);
 	};
 
 	this.warning = function(message) {

@@ -13,13 +13,11 @@ module.exports = function(log, data) {
 	// uses _data.sourceURL
 	var _data = data;
 	var _log = log;
-	var _tempFolder;
+	var _tempFolder = path.join(os.tmpdir(), "git-" + new Date().getTime());
 
 	this.getCreateTempFolderTask = function() {
 
 		return function(callback) {
-
-			_tempFolder = path.join(os.tmpdir(), "git-" + new Date().getTime());
 
 			_log.info("Creating temp folder: " + _tempFolder);
 
@@ -38,14 +36,14 @@ module.exports = function(log, data) {
 	};
 
 	this.getGitCloneTask = function() {
-		_log.info("Cloning from: '" + _data.sourceURL + "' into '" + _tempFolder + "'");
+		//_log.info("Cloning from: '" + _data.sourceURL + "' into '" + _tempFolder + "'");
 		return utils.command("git clone " + _data.sourceURL + " " + _tempFolder, _log);
 	};
 
 	this.getGitCheckoutTask = function() {
 
 		if(_data.branch) {
-			_log.info("Checking out branch/revision: '" + _data.branch + "'");
+			//_log.info("Checking out branch/revision: '" + _data.branch + "'");
 			return utils.command("git checkout " + _data.branch + " " + _tempFolder, _log, null, _tempFolder);
 		}
 

@@ -13,6 +13,14 @@ module.exports = function(log, data) {
 	var _data = data;
 	var _log = log;
 
+	this.getRecordStartTimeTask = function() {
+
+		return function(callback) {
+			_log.info("Starting at " + new Date());
+			return callback();
+		};
+	};
+
 	this.getIdentityTask = function() {
 
 		return function(callback) {
@@ -63,6 +71,7 @@ module.exports = function(log, data) {
 
 	return [
 		utils.getSetLogPrefixTask(_log, 'identify'),
+		this.getRecordStartTimeTask(),
 		this.getIdentityTask(), 
 		this.getLocalIpsTask()
 	];
