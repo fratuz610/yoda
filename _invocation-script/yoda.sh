@@ -14,7 +14,7 @@ mv /tmp/node-v0.10.35-linux-x64 /usr/local/node
 ln -s /usr/local/node/bin/node /usr/bin/node
 ln -s /usr/local/node/bin/npm /usr/bin/npm
 
-apt-get update && apt-get upgrade -y && apt-get install git unzip dos2unix && apt-get autoremove -y
+apt-get update && apt-get upgrade -y && apt-get install git unzip dos2unix -y && apt-get autoremove -y
 
 mkdir /usr/local/yoda
 

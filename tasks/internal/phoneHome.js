@@ -11,7 +11,6 @@ module.exports = function(log, data) {
 	var _log = log;
 	var _self = this;
 
-
 	this.getRecordEndTimeTask = function() {
 
 		return function(callback) {
@@ -63,7 +62,7 @@ module.exports = function(log, data) {
 			var mailOptions = {
 			    from: 'Yoda Provisioning Tool <'+_data.phoneHome.from+'>', // sender address
 			    to: toList.join(','), // list of receivers
-			    subject: 'Yoda run results for ' + _data.instanceId, // Subject line
+			    subject: '['+ _data.instanceId + '] Yoda run results', // Subject line
 			    text: _log.getLog() // plaintext body
 			};
 

@@ -94,11 +94,6 @@ module.exports = function(log, data) {
 
 			_data = utils.mergeRecursive(_data, localDoc);
 
-			if(!_data.phoneHome)
-				_log.warning("No phoneHome information supplied, logging information will be discarded");
-			else
-				_log.info("PhoneHome data supplied, all logging information will be sent to " + _data.phoneHome.to);
-
 			return callback();
 		};
 	};
@@ -132,6 +127,11 @@ module.exports = function(log, data) {
 				_log.info("Injecting command line additional parameters");
 				_data = utils.mergeRecursive(_data, _data.cmdlineData);
 			}
+
+			if(!_data.phoneHome)
+				_log.warning("No phoneHome information supplied, logging information will be saved locally");
+			else
+				_log.info("PhoneHome data supplied, all logging information will be sent to " + _data.phoneHome.to);
 
 			return callback();
 		};
