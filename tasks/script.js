@@ -62,14 +62,11 @@ module.exports = function(task) {
 			if(cwd !== null) options.cwd = cwd;
 
 			//we run the command
-			var childProcess = exec(cmd, options, function(error, stdout, stderr) {
+			var childProcess = exec(cmd + " 2>&1", options, function(error, stdout, stderr) {
 				
 				if(error)
 					return callback(error);
 
-				if(stderr.toString().length !== 0)
-					return callback(new Error(cmd + " returned error '" + stderr.toString() + "'"));
-				
 				if(stdout.toString().trim().length > 0) {
 					log.info("**************************************************");
 					log.info(stdout.toString().split('\n'));
