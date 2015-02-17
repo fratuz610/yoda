@@ -19,6 +19,7 @@ var Script = require('../../tasks/script.js');
 var Symlink = require('../../tasks/symlink.js');
 var Template = require('../../tasks/template.js');
 var User = require('../../tasks/user.js');
+var RemoteFile = require('../../tasks/remote-file.js');
 
 var Task = require('../../task.js');
 
@@ -157,7 +158,8 @@ module.exports = function(log, data) {
 					var task = new Task(item[name]);
 
 					switch(name.toLowerCase()) {
-						case 'apt_package': case 'apt-package': taskList.push(new AptPackage(task)); break;
+						case 'apt_package': 
+						case 'apt-package': taskList.push(new AptPackage(task)); break;
 						case 'directory': taskList.push(new Directory(task)); break;
 						case 'file': taskList.push(new File(task)); break;
 						case 'git': taskList.push(new Git(task)); break;
@@ -165,6 +167,8 @@ module.exports = function(log, data) {
 						case 'symlink': taskList.push(new Symlink(task)); break;
 						case 'template': taskList.push(new Template(task)); break;
 						case 'user': taskList.push(new User(task)); break;
+						case 'remote_file': 
+						case 'remote-file': taskList.push(new RemoteFile(task)); break;
 						default: lastError = new Error("Unrecognized task: " + name);
 					}
 
