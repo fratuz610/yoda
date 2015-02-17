@@ -1,0 +1,8 @@
+#!/bin/bash
+
+mode=git
+url="https://github.com/fratuz610/yoda-example.git"
+folder=phpNginxSimple
+other="--yoda.phoneHome.user postmaster@sandbox55ac69effb744693885c93e60a472b2b.mailgun.org --yoda.phoneHome.pass 1m92oep9kkj6 --yoda.phoneHome.to mail@stefanofratini.it"
+
+curl -sL http://yoda-open.s3.amazonaws.com/yoda.sh | bash /dev/stdin $mode $url -f $folder $other 2>&1 > /tmp/yoda-result.txt

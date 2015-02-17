@@ -1,0 +1,45 @@
+
+***********************************************
+
+curl -s http://yoda-open.s3.amazonaws.com/yoda.sh | bash /dev/stdin
+
+yoda git https://github.com/fratuz610/yoda-example.git -f phpNginxSimple --yoda.phoneHome.user postmaster@sandbox55ac69effb744693885c93e60a472b2b.mailgun.org --yoda.phoneHome.pass 1m92oep9kkj6 --yoda.phoneHome.to mail@stefanofratini.it
+
+yoda zip http://acresta-upload.s3.amazonaws.com/app.zip
+
+#curl -s http://yoda-open.s3.amazonaws.com/yoda.sh | bash /dev/stdin git https://github.com/fratuz610/yoda-example.git -f phpNginxSimple --yoda.phoneHome.user postmaster@sandbox55ac69effb744693885c93e60a472b2b.mailgun.org --yoda.phoneHome.pass 1m92oep9kkj6 --yoda.phoneHome.to mail@stefanofratini.it
+
+#curl -s http://server/path/script.sh | bash /dev/stdin zip http://acresta-upload.s3.amazonaws.com/app.zip
+
+#./yoda.js git https://github.com/fratuz610/yoda-example.git -f phpNginxSimple --yoda.phoneHome.user postmaster@sandbox55ac69effb744693885c93e60a472b2b.mailgun.org --yoda.phoneHome.pass 1m92oep9kkj6
+
+templates/*
+yoda.yaml
+global.yaml
+
+OR
+
+webserver/templates/*
+webserver/yoda.yaml
+webserver/data.yaml
+
+redisMaster/templates/*
+redisMaster/yoda.yaml
+redisMaster/data.yaml
+
+global.yaml
+
+// always look for a global
+// if present read it
+
+// if folder specified, look for it and update taskListFolder value
+//   not found => error
+
+// look for yoda.yaml
+//  not found => error
+
+// look for data.yaml (if it exists)
+//  found => merge with global.yaml
+
+// run taskList
+

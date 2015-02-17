@@ -1,31 +1,40 @@
 #!/bin/bash
 
+# Installing Node
+echo "-- Installing Node.js & system dependencies"
+
+curl -sL https://deb.nodesource.com/setup | sudo bash -
+
+apt-get install -y nodejs git unzip dos2unix
+
+apt-get autoremove -y
+
 # Some cleanup for idempotency
-rm -fr /usr/local/node
-rm -f /usr/bin/node
-rm -f /usr/bin/npm
-rm -fr /tmp/node*
+echo "-- Cleaning up previous folders"
+
 rm -fr /usr/local/yoda
 rm -fr /usr/bin/yoda
+rm -f /tmp/master.zip
+rm -fr /tmp/yoda-master
 
-wget http://nodejs.org/dist/latest/node-v0.10.35-linux-x64.tar.gz -P /tmp
-tar -C /tmp -xf /tmp/node-v0.10.35-linux-x64.tar.gz
-mv /tmp/node-v0.10.35-linux-x64 /usr/local/node
-ln -s /usr/local/node/bin/node /usr/bin/node
-ln -s /usr/local/node/bin/npm /usr/bin/npm
+echo "-- Installing yoda"
 
-apt-get update && apt-get upgrade -y && apt-get install git unzip dos2unix -y && apt-get autoremove -y
+wget -P /tmp/ http://github.com/fratuz610/yoda/archive/master.zip -q
 
-mkdir /usr/local/yoda
+unzip -qq /tmp/master.zip -d /tmp
 
-git clone https://github.com/fratuz610/yoda /usr/local/yoda
+mv /tmp/yoda-master /usr/local/yoda
 
-cd /usr/local/yoda && npm update
+echo "-- Updating yoda dependencies\n"
+
+cd /usr/local/yoda && npm update 2>&1 > /dev/null
+
+echo "-- Setting up yoda executable"
 
 chmod u+x /usr/local/yoda/yoda.js
 
 ln -s /usr/local/yoda/yoda.js /usr/bin/yoda
 
-dos2unix /usr/local/yoda/yoda.js
+dos2unix /usr/local/yoda/yoda.js 2>&1 > /dev/null
 
-yoda $*
+echo "-- Yoda setup completed"
