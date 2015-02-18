@@ -1,3 +1,3 @@
-curl -s http://yoda-open.s3.amazonaws.com/yoda.sh | bash /dev/stdin
+curl -sL http://yoda-open.s3.amazonaws.com/yoda.sh | sudo bash /dev/stdin
 
 yoda git https://github.com/fratuz610/yoda-example.git -f phpNginxSimple --yoda.phoneHome.user postmaster@sandbox55ac69effb744693885c93e60a472b2b.mailgun.org --yoda.phoneHome.pass 1m92oep9kkj6 --yoda.phoneHome.to mail@stefanofratini.it

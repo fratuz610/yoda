@@ -18,10 +18,5 @@
     "express": "*",
     "mocha": "*",
     "supertest": "*"
-  },
-  "scripts": {
-    "test": "npm run test-db",
-    "test-queue": "mocha test/queueTest.js",
-    "test-db": "mocha test/dbTest.js"
   }
 }
